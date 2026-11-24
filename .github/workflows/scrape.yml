@@ -2,12 +2,11 @@ name: TikTok Trend Scraper
 
 on:
   schedule:
-    # Runs every day at 8:00 AM Central Time (14:00 UTC)
     - cron: "0 14 * * *"
-  workflow_dispatch:  # lets you also trigger it manually from GitHub UI
+  workflow_dispatch:
 
 permissions:
-  contents: write  # needed to commit the report back to the repo
+  contents: write
 
 jobs:
   scrape:
