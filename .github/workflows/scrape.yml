@@ -1,1 +1,40 @@
+name: TikTok Trend Scraper
 
+on:
+  schedule:
+    # Runs every day at 8:00 AM Central Time (14:00 UTC)
+    - cron: "0 14 * * *"
+  workflow_dispatch:  # lets you also trigger it manually from GitHub UI
+
+permissions:
+  contents: write  # needed to commit the report back to the repo
+
+jobs:
+  scrape:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: "pip"
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Run scraper
+        env:
+          APIFY_TOKEN: ${{ secrets.APIFY_TOKEN }}
+        run: python scraper.py
+
+      - name: Commit and push report
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add tiktok_trends.html
+          git diff --cached --quiet || git commit -m "chore: update trend report $(date +'%Y-%m-%d')"
+          git push
