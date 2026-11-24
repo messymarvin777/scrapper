@@ -151,9 +151,9 @@ def scrape_hashtag(client: ApifyClient, hashtag: str) -> list[dict]:
                     "shouldDownloadVideos": False,
                     "shouldDownloadCovers": False,
                 },
-                timeout_secs=120,
+                
             )
-            items = list(client.dataset(run["defaultDatasetId"]).iterate_items())
+            items = list(client.dataset(run.default_dataset_id).iterate_items())
             print(f"    → {len(items)} videos pulled (via {actor_id})")
             return items
         except Exception as e:
