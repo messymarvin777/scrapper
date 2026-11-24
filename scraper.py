@@ -30,14 +30,14 @@ APIFY_TOKEN = os.environ.get("APIFY_TOKEN", "YOUR_APIFY_TOKEN_HERE")
 
 # Hashtags to monitor — mix broad product tags + niche ones
 HASHTAGS = [
-    "TikTokMadeMeBuyIt",
-    "AmazonFinds",
-    "ProductReview",
-    "MustHave",
-    "TikTokShop",
-    "GadgetTok",
-    "HomeFinds",
-    "CoolProducts",
+    "KitchenTok",
+    "KitchenGadgets", 
+    "CookingHacks",
+    "KitchenFinds",
+    "CookingTok",
+    "MealPrepTok",
+    "KitchenTools",
+    "CookingGadgets",
 ]
 
 # How many videos to pull per hashtag (keep low on free tier — 100 total is safe)
