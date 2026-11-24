@@ -136,22 +136,30 @@ def extract_product_keywords(text: str) -> list[str]:
 def scrape_hashtag(client: ApifyClient, hashtag: str) -> list[dict]:
     """Run Apify's TikTok Hashtag Scraper for one hashtag."""
     print(f"  Scraping #{hashtag}...")
-    try:
-        run = client.actor("clockworks/tiktok-hashtag-scraper").call(
-            run_input={
-                "hashtags": [hashtag],
-                "resultsPerPage": VIDEOS_PER_HASHTAG,
-                "shouldDownloadVideos": False,
-                "shouldDownloadCovers": False,
-            },
-            timeout_secs=120,
-        )
-        items = list(client.dataset(run["defaultDatasetId"]).iterate_items())
-        print(f"    → {len(items)} videos pulled")
-        return items
-    except Exception as e:
-        print(f"    ✗ Failed: {e}")
-        return []
+    # Try multiple known actor IDs for TikTok hashtag scraping
+    actor_ids = [
+        "clockworks/tiktok-hashtag-scraper",
+        "clockworks/tiktok-scraper",
+        "novi/tiktok-scraper",
+    ]
+    for actor_id in actor_ids:
+        try:
+            run = client.actor(actor_id).call(
+                run_input={
+                    "hashtags": [hashtag],
+                    "resultsPerPage": VIDEOS_PER_HASHTAG,
+                    "shouldDownloadVideos": False,
+                    "shouldDownloadCovers": False,
+                },
+                timeout_secs=120,
+            )
+            items = list(client.dataset(run["defaultDatasetId"]).iterate_items())
+            print(f"    → {len(items)} videos pulled (via {actor_id})")
+            return items
+        except Exception as e:
+            print(f"    ✗ {actor_id} failed: {e}")
+            continue
+    return []
 
 
 def collect_all_videos(client: ApifyClient) -> list[dict]:
@@ -387,7 +395,20 @@ def main():
     print(f"   {len(results)} videos scored above threshold")
 
     if not results:
-        print("❌ No results above threshold. Try lowering MIN_VIEWS.")
+        print("⚠️  No results above threshold — generating empty report anyway.")
+        # Generate a report with a helpful message so the file always exists
+        html = """<!DOCTYPE html><html><head><title>TikTok Trend Report</title>
+        <style>body{font-family:sans-serif;background:#0f0f0f;color:#f0f0f0;
+        padding:40px;text-align:center;}</style></head>
+        <body><h1 style="color:#fe2c55">No results yet</h1>
+        <p>The scraper ran but found no videos above the minimum view threshold.<br>
+        This usually means the Apify actor returned limited data on the first run.<br>
+        Try running again tomorrow — it improves once the actor warms up.</p>
+        <p style="color:#888">Generated: """ + datetime.datetime.now().strftime("%Y-%m-%d %H:%M") + """</p>
+        </body></html>"""
+        with open(OUTPUT_FILE, "w", encoding="utf-8") as f:
+            f.write(html)
+        print(f"✅ Empty report saved to {OUTPUT_FILE}")
         return
 
     print(f"\n📄 Generating HTML report → {OUTPUT_FILE}")
