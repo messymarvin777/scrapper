@@ -45,6 +45,17 @@ VIDEOS_PER_HASHTAG = 15
 
 # Minimum views to even consider a video (filters out tiny accounts)
 MIN_VIEWS = 10_000
+PRODUCT_KEYWORDS = [
+    "link in bio", "get it", "buy", "shop", "amazon", "where to get",
+    "gadget", "tool", "product", "game changer", "must have", "obsessed",
+    "you need this", "find it", "grab it", "affordable", "under $"
+]
+# Only keep videos that mention product-related keywords
+PRODUCT_KEYWORDS = [
+    "link in bio", "get it", "buy", "shop", "amazon", "where to get",
+    "gadget", "tool", "product", "game changer", "must have", "obsessed",
+    "you need this", "find it", "grab it", "affordable", "under $"
+]
 
 # How many hours back to look (videos older than this get penalized in scoring)
 RECENCY_WINDOW_HOURS = 72
@@ -193,6 +204,8 @@ def analyze_videos(videos: list[dict]) -> list[dict]:
             continue
 
         desc = v.get("text", "") or v.get("desc", "") or ""
+        if not any(kw in desc.lower() for kw in PRODUCT_KEYWORDS):
+            continue
         author = v.get("authorMeta", {}) or {}
 
         create_time = v.get("createTime", 0)
